@@ -1,0 +1,26 @@
+#Compute the Toeplitz matrix with symbol g
+
+nu=minu;
+
+beta=1/Pi; 
+
+A=2*Pi;
+
+g[x_]:=Exp[beta*(x-Pi*Sign[x])/((-Log[Abs[x]/A])^nu)]
+
+l= mil
+old= miold
+
+tabla = ParallelTable[Correl2 = NIntegrate[g[x]*Exp[I*x*(old+i)], {x, -Pi, Pi},
+    MaxRecursion -> 10000, Method -> "LevinRule"]/(2*Pi), {i, 0, l-old}];
+
+datos = Table[{old+i-1, FortranForm[Re[tabla[[i]]]],
+   FortranForm[Im[tabla[[i]]]]}, {i, 1, l-old+1}];
+
+datosout = Grid[datos];
+
+out = FileNameJoin@{"matrix_g_"<>ToString[NumberForm[nu]]<>".dat"};
+
+PutAppend[OutputForm[datosout], out];
+
+

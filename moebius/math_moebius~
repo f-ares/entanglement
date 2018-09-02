@@ -1,0 +1,191 @@
+(*
+
+  This notebook computes the correlation matrix
+  2<(a_n, a_n^dagger)^t(a_m^dagger, a_m)>-I in
+  the Majorana basis after any Moebius transformation
+  SL(2, C)*)
+
+(*
+
+  Under an arbitrary Moebius transformation of the correlation
+  matrix is not Hermitian anymore, and we cannot employ moebius.c
+  to diagonalize it
+
+*)
+
+
+(*Initial Laurent polynomials*)
+Phi0[z_] := A2*z^4 + A1*z^3 + A0*z^2 + A1*z+ A2
+(*Real part of Xi*)
+XiR0[z_] := Br2*z^4 + Br1*z^3 - Br1*z- Br2
+(*Imaginary part of Xi*)
+XiI0[z_] := Bi2*z^4 + Bi1*z^3 - Bi1*z- Br2
+
+(*Initial value of the couplings*)
+
+A2 = 125/256;
+A1 = -75/128;
+A0 = 5/16;
+Br2 = 131/256;
+Br1 = -85/128;
+Bi2 = 0.5;
+Bi1 = 0.2;
+
+(*Initial value of the roots*)
+
+(*Roots of Phi0*)
+zp10=Root[Phi0[z], 1];
+zp20=Root[Phi0[z], 2];
+zp30=Root[Phi0[z], 3];
+zp40=Root[Phi0[z], 4];
+
+(*Roots of XiR0*)
+zr10=Root[XiR0[z], 1];
+zr20=Root[XiR0[z], 2];
+zr30=Root[XiR0[z], 3];
+zr40=Root[XiR0[z], 4];
+
+(*Roots of XiI0*)
+zi10=Root[XiI0[z], 1];
+zi20=Root[XiI0[z], 2];
+zi30=Root[XiI0[z], 3];
+zi40=Root[XiI0[z], 4];
+
+ 
+(*Range of the interactions*)
+L=2;
+
+(*SO(1,1) transformation*)
+
+zeta=myzeta;
+
+a=Cosh[zeta];
+b=Sinh[zeta];
+c=Sinh[zeta];
+d=Cosh[zeta];
+
+
+T[z_]:= (z*a+b)/(z*c+d)
+
+(*Roots of Phi*)
+zp1=T[zp10];
+zp2=T[zp20];
+zp3=T[zp30];
+zp4=T[zp40];
+
+(*Roots of XiR*)
+zr1=T[zr10];
+zr2=T[zr20];
+zr3=T[zr30];
+zr4=T[zr40];
+
+(*Roots of XiI*)
+zi1=T[zi10];
+zi2=T[zi20];
+zi3=T[zi30];
+zi4=T[zi40];
+
+
+(*Monic final polynomials*)
+PhiM[z_]:=(z-zp1)*(z-zp2)*(z-zp3)*(z-zp4)
+XiRM[z_]:=(z-zr1)*(z-zr2)*(z-zr3)*(z-zr4)
+XiIM[z_]:=(z-zi1)*(z-zi2)*(z-zi3)*(z-zi4)
+
+(*Change of leading terms of our polynomials*)
+
+zt=0.5;
+
+A=((a*zt+b)*(d+c*zt))^(-L)*Phi0[zt]/(T[zt]^(-L)*PhiM[T[zt]]);
+
+Br=((a*zt+b)*(d+c*zt))^(-L)*XiR0[zt]/(T[zt]^(-L)*XiRM[T[zt]]);
+
+Bi=((a*zt+b)*(d+c*zt))^(-L)*XiI0[zt]/(T[zt]^(-L)*XiIM[T[zt]]);
+
+(*eta=0;*)
+
+(*Final polynomials*)
+Phi[z_] := A*PhiM[z]
+XiR[z_] := Br*XiRM[z]
+XiI[z_] := Bi*XiIM[z]
+
+
+(*We calculate the symbol G of the correlation matrix in the Majorana basis*)
+
+(*We obtain the entries of M with the correct sign by solving the following 
+  differential equation for the dispersion relation*)
+
+omega = NDSolveValue[{t'[x] == 
+    I*Exp[I*x]*((Phi[Exp[I*x]]*Phi'[Exp[I*x]] - 
+         XiR[Exp[I*x]]*XiR'[Exp[I*x]] - 
+         XiI[Exp[I*x]]*XiI'[Exp[I*x]])/(Phi[Exp[I*x]]^2 - 
+         XiR[Exp[I*x]]^2 - XiI[Exp[I*x]]^2)), 
+   t[0] == 0.5*Log[Phi[1]^2 - XiR[1]^2 - XiI[1]^2]}, t, {x, -Pi, Pi}]
+
+M11[x_] := I*XiI[Exp[I*x]]/Exp[omega[x]]
+
+M12[x_] := (Phi[Exp[I*x]] + XiR[Exp[I*x]])/Exp[omega[x]]
+
+M21[x_] := (Phi[Exp[I*x]] - XiR[Exp[I*x]])/Exp[omega[x]]
+
+(*Broken parity*)
+(*Transformation of the discontinuities of the symbol under Moebius*)
+
+theta10= 3*Pi/4;
+theta20= Pi/2;
+theta1=-Re[I*Log[(Exp[I*theta10]*Cosh[zeta]+Sinh[zeta])/(Exp[I*theta10]*Sinh[zeta]+Cosh[zeta])]];
+theta2=-Re[I*Log[(Exp[I*theta20]*Cosh[zeta]+Sinh[zeta])/(Exp[I*theta20]*Sinh[zeta]+Cosh[zeta])]];
+
+
+Array[G[x_], {2, 2}];
+
+
+G[x_][0, 0] := 
+ Piecewise[{{M11[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {1, x >= theta2 && x <= theta1}, {-1, 
+    x >= -theta1 && x <= -theta2}}]
+
+G[x_][0, 1] := 
+ Piecewise[{{M12[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {0, 
+    x >= theta2 && x <= theta1 || x >= -theta2 && x <= -theta1}}]
+
+G[x_][1, 0] := 
+ Piecewise[{{M21[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {0, 
+    x >= theta2 && x <= theta1 || x >= -theta2 && x <= -theta1}}]
+
+G[x_][1, 1] := 
+ Piecewise[{{-M11[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {1, x >= theta2 && x <= theta1}, {-1, 
+    x >= -theta1 && x <= -theta2}}]
+
+(*Calculate the entries of a row of the matrix*)
+
+jmax = myl+1;
+j = 1;
+d = 0;
+correl = Array[VCorrel, {jmax, 8}];
+While[j <= jmax, 
+ VCorrel1 = NIntegrate[G[x][0, 0]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi);
+ VCorrel2 = NIntegrate[G[x][0, 1]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
+ VCorrel3 = NIntegrate[G[x][1, 0]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
+ VCorrel4 = NIntegrate[G[x][1, 1]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
+ VCorrel[j, 1] = Re[VCorrel1];
+ VCorrel[j, 2] = Im[VCorrel1]; 
+ VCorrel[j, 3] = Re[VCorrel3];
+ VCorrel[j, 4] = Im[VCorrel3]; 
+ VCorrel[j, 5] = Re[VCorrel2]; 
+ VCorrel[j, 6] = Im[VCorrel2];
+ VCorrel[j, 7] = Re[VCorrel4]; 
+ VCorrel[j, 8] = Im[VCorrel4];
+ d++;
+ j++]
+
+(*We write the entries of the row in a text file*)
+
+out = FileNameJoin@{"moebius_correl.dat"};
+Export[out, correl];

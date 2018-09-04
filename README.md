@@ -34,4 +34,4 @@ fermionic chain:
              obtain the spectrum. They also employ OpenMP to diagonalise
              several matrix of different length simultaneously. 
             
- Filiberto Ares-Departamento de Física Teórica, Universidad de Zaragoza, 50009 Zaragoza (Spain) ares@unizar.es
+ Filiberto Ares-Departamento de Física Teórica, Universidad de Zaragoza, 50009 Zaragoza (Spain) ares (at) unizar.es

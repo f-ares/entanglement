@@ -18,8 +18,8 @@ The repository is divided into three folders. The codes in each one are
 prepared to compute the entanglement entropy in a different particular 
 fermionic chain:
 
- -lrk: Long-Range Kitaev chain with power-law decaying pairings. 
-       The C programs compute the spectrum of the matrix using 
+    *lrk: Long-Range Kitaev chain with power-law decaying pairings. 
+          The C programs compute the spectrum of the matrix using 
           GSL. Those that end with "*_disjoint_number.c" compute 
           the entanglement entropy of "number" disjoint intervals.
           
@@ -31,4 +31,5 @@ fermionic chain:
     *sublog: study of the determinant of a Toeplitz matrix with a symbol
              that violates the smoothness condition of the Widom theorem.
              In this case, the C programs employ the Intel MKL library to
-             obtain the spectrum.
+             obtain the spectrum. They also employ OpenMP to diagonalise
+             several matrix of different length simultaneously. 

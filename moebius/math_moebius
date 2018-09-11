@@ -1,134 +1,113 @@
 (*
 
   This notebook computes a row of the correlation matrix
-  2<(a_n, a_n^dagger)^t(a_m^dagger, a_m)>-I in
-  the Majorana basis after any Moebius transformation
-  SL(2, C)*)
+  2<(a_n, a_n^dagger)^t(a_m^dagger, a_m)>-I after any 
+  Moebius transformation SL(2, C)
+
+*)
 
 (*
 
+  REMARK:
   Under an arbitrary Moebius transformation the correlation
   matrix is not Hermitian anymore, and we cannot employ moebius.c
   to diagonalize it!
 
 *)
 
+(*Range of the interactions*)
 
-(*Initial Laurent polynomials*)
+L = 2;
 
-Phi0[z_] := A2*z^4 + A1*z^3 + A0*z^2 + A1*z+ A2
+(*Arrays for the initial coupling constants*)
 
-(*Real part of Xi*)
-XiR0[z_] := Br2*z^4 + Br1*z^3 - Br1*z- Br2
+Array[A, L];
+Array[B, L];
 
-(*Imaginary part of Xi*)
-XiI0[z_] := Bi2*z^4 + Bi1*z^3 - Bi1*z- Br2
+(*Initial 'Laurent' polynomials*)
 
-(*Initial value of the couplings*)
+Phi0[z_] := Sum[A[l]*z^(L + l) + Conjugate[A[l]]*z^(L - l), {l, 1, L}] + A0*z^L
 
-A2 = 125/256;
-A1 = -75/128;
+Xi0[z_] := Sum[B[l]*z^(L + l) - B[l]*z^(L - l), {l, 1, L}]
+
+Xi0C[z_] := Sum[Conjugate[B[l]]*z^(L + l) - Conjugate[B[l]]*z^(L - l), {l, 1, L}]
+
+(*Initial value of the coupling constants*)
+
+A[2] = 125/256;
+A[1] = -75/128;
 A0 = 5/16;
-Br2 = 131/256;
-Br1 = -85/128;
-Bi2 = 0.5;
-Bi1 = 0.2;
+B[2] = 131/256;
+B[1] = -85/128;
 
-(*Initial value of the roots*)
+(*Initial value of the roots of the polynomials*)
 
 (*Roots of Phi0*)
-zp10=Root[Phi0[z], 1];
-zp20=Root[Phi0[z], 2];
-zp30=Root[Phi0[z], 3];
-zp40=Root[Phi0[z], 4];
+zp0 = Table[Root[Phi0[z], j], {j, 1, 2*L}];
 
-(*Roots of XiR0*)
-zr10=Root[XiR0[z], 1];
-zr20=Root[XiR0[z], 2];
-zr30=Root[XiR0[z], 3];
-zr40=Root[XiR0[z], 4];
+(*Roots of Xi0*)
+zx0 = Table[Root[Xi0[z], j], {j, 1, 2*L}];
 
-(*Roots of XiI0*)
-zi10=Root[XiI0[z], 1];
-zi20=Root[XiI0[z], 2];
-zi30=Root[XiI0[z], 3];
-zi40=Root[XiI0[z], 4];
-
- 
-(*Range of the interactions*)
-L=2;
+(*Roots of Xi0C*)
+zx0c = Table[Root[Xi0C[z], j], {j, 1, 2*L}];
 
 (*SO(1,1) transformation*)
 
-zeta=myzeta;
+zeta = myzeta;
 
-a=Cosh[zeta];
-b=Sinh[zeta];
-c=Sinh[zeta];
-d=Cosh[zeta];
+a = Cosh[zeta];
+b = Sinh[zeta];
+c = Sinh[zeta];
+d = Cosh[zeta];
 
+T[z_] := (z*a + b)/(z*c + d)
 
-T[z_]:= (z*a+b)/(z*c+d)
+(*Transformed 'Laurent' polynomials*)
 
 (*Roots of Phi*)
-zp1=T[zp10];
-zp2=T[zp20];
-zp3=T[zp30];
-zp4=T[zp40];
+zp = Table[T[zp0[[j]]], {j, 1, 2*L}];
 
-(*Roots of XiR*)
-zr1=T[zr10];
-zr2=T[zr20];
-zr3=T[zr30];
-zr4=T[zr40];
+(*Roots of Xi*)
+zx = Table[T[zx0[[j]]], {j, 1, 2*L}];
 
-(*Roots of XiI*)
-zi1=T[zi10];
-zi2=T[zi20];
-zi3=T[zi30];
-zi4=T[zi40];
-
+(*Roots of XiC*)
+zxc = Table[T[zx0c[[j]]], {j, 1, 2*L}];
 
 (*Final monic polynomials*)
-PhiM[z_]:=(z-zp1)*(z-zp2)*(z-zp3)*(z-zp4)
-XiRM[z_]:=(z-zr1)*(z-zr2)*(z-zr3)*(z-zr4)
-XiIM[z_]:=(z-zi1)*(z-zi2)*(z-zi3)*(z-zi4)
+
+PhiM[z_] := Product[z - zp[[j]], {j, 1, 2*L}]
+XiM[z_] := Product[z - zx[[j]], {j, 1, 2*L}]
+XiMC[z_] := Product[z - zxc[[j]], {j, 1, 2*L}]
 
 (*Change of the leading terms of the polynomials*)
 
-zt=0.5;
+zt = 0.5;
 
-A=((a*zt+b)*(d+c*zt))^(-L)*Phi0[zt]/(T[zt]^(-L)*PhiM[T[zt]]);
+AT = ((a*zt + b)*(d + c*zt))^(-L)*Phi0[zt]/(T[zt]^(-L)*PhiM[T[zt]]);
+BT = ((a*zt + b)*(d + c*zt))^(-L)*Xi0[zt]/(T[zt]^(-L)*XiM[T[zt]]);
+BTC = ((a*zt + b)*(d + c*zt))^(-L)*Xi0C[zt]/(T[zt]^(-L)*XiMC[T[zt]]);
 
-Br=((a*zt+b)*(d+c*zt))^(-L)*XiR0[zt]/(T[zt]^(-L)*XiRM[T[zt]]);
+(*Final 'Laurent' polynomials*)
+Phi[z_] := AT*PhiM[z]
+Xi[z_] := BT*XiM[z]
+XiC[z_] := BTC*z^(2*L)*XiMC[1/z]
 
-(*Bi=((a*zt+b)*(d+c*zt))^(-L)*XiI0[zt]/(T[zt]^(-L)*XiIM[T[zt]]);*)
+(*We calculate the symbol G of the correlation matrix*)
 
-Bi=0;
-
-(*Final polynomials*)
-Phi[z_] := A*PhiM[z]
-XiR[z_] := Br*XiRM[z]
-XiI[z_] := Bi*XiIM[z]
-
-
-(*We calculate the symbol G of the correlation matrix in the Majorana basis*)
-
-(*We obtain the entries of M with the correct sign by solving the following 
-  differential equation for the dispersion relation*)
+(*We obtain the entries of M with the correct sign by solving the \
+following differential equation for the dispersion relation*)
 
 omega = NDSolveValue[{t'[x] == 
-    I*Exp[I*x]*((Phi[Exp[I*x]]*Phi'[Exp[I*x]] - 
-         XiR[Exp[I*x]]*XiR'[Exp[I*x]] - 
-         XiI[Exp[I*x]]*XiI'[Exp[I*x]])/(Phi[Exp[I*x]]^2 - 
-         XiR[Exp[I*x]]^2 - XiI[Exp[I*x]]^2)), 
-   t[0] == 0.5*Log[Phi[1]^2 - XiR[1]^2 - XiI[1]^2]}, t, {x, -Pi, Pi}]
+        I*Exp[I*x]*(Phi[Exp[I*x]]*Phi'[Exp[I*x]] + 
+        (Xi[Exp[I*x]]*XiC'[Exp[I*x]] + Xi'[Exp[I*x]]*XiC[Exp[I*x]])/2)/
+        (Phi[Exp[I*x]]^2 + Xi[Exp[I*x]]*XiC[Exp[I*x]]), 
+        t[0] == 0.5*Log[Phi[1]^2 + Xi[1]*XiC[1]]}, t, {x, -Pi, Pi}]
 
-M11[x_] := I*XiI[Exp[I*x]]/Exp[omega[x]]
+M11[x_] := Phi[Exp[I*x]]/Exp[omega[x]]
 
-M12[x_] := (Phi[Exp[I*x]] + XiR[Exp[I*x]])/Exp[omega[x]]
+M12[x_] := Xi[Exp[I*x]]/Exp[omega[x]]
 
-M21[x_] := (Phi[Exp[I*x]] - XiR[Exp[I*x]])/Exp[omega[x]]
+M21[x_] := XiC[Exp[I*x]]/Exp[omega[x]]
 
 (*Broken parity*)
 (*Transformation of the discontinuities of the symbol under Moebius*)
@@ -186,11 +165,8 @@ While[d+1 <= dmax,
  V4 = NIntegrate[G[x][1, 1]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
  data= Row[Riffle[{FortranForm[Re[V1]], FortranForm[Im[V1]],
                    FortranForm[Re[V3]], FortranForm[Im[V3]],
-		   FortranForm[Re[V2]], FortranForm[Im[V2]],
-		   FortranForm[Re[V4]], FortranForm[Im[V4]]}, " "]];
+		           FortranForm[Re[V2]], FortranForm[Im[V2]],
+		           FortranForm[Re[V4]], FortranForm[Im[V4]]}, " "]];
  PutAppend[OutputForm[data], filename];
  d++;
 ]
-
-
-

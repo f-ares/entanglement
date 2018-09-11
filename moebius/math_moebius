@@ -99,7 +99,7 @@ following differential equation for the dispersion relation*)
 
 omega = NDSolveValue[{t'[x] == 
         I*Exp[I*x]*(Phi[Exp[I*x]]*Phi'[Exp[I*x]] + 
-        (Xi[Exp[I*x]]*XiC'[Exp[I*x]] + Xi'[Exp[I*x]]*XiC[Exp[I*x]])/2)/
+        0.5*(Xi[Exp[I*x]]*XiC'[Exp[I*x]] + Xi'[Exp[I*x]]*XiC[Exp[I*x]]))/
         (Phi[Exp[I*x]]^2 + Xi[Exp[I*x]]*XiC[Exp[I*x]]), 
         t[0] == 0.5*Log[Phi[1]^2 + Xi[1]*XiC[1]]}, t, {x, -Pi, Pi}]
 

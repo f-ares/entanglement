@@ -1,6 +1,6 @@
-#Compute the Toeplitz matrix with symbol g
+#It computes the Toeplitz matrix with symbol g
 
-nu=minu;
+nu=mynu;
 
 beta=1/Pi; 
 
@@ -8,8 +8,8 @@ A=2*Pi;
 
 g[x_]:=Exp[beta*(x-Pi*Sign[x])/((-Log[Abs[x]/A])^nu)]
 
-l= mil
-old= miold
+l= myl
+old= myold
 
 tabla = ParallelTable[Correl2 = NIntegrate[g[x]*Exp[I*x*(old+i)], {x, -Pi, Pi},
     MaxRecursion -> 10000, Method -> "LevinRule"]/(2*Pi), {i, 0, l-old}];

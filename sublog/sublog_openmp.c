@@ -260,7 +260,4 @@ void write_results(int l)
   out=fopen(name_file, "at");
   fprintf(out,"%d %.10lf\n", l, log_det);
   fclose(out);
-}
-
-
-  
+}  

@@ -23,7 +23,7 @@ while (( $(echo "$zeta <= $zeta_max" | bc)==1)) ; do
 
    while (( $(echo "$l <= $l_max" | bc)==1)) ; do
      
-     echo $l
+     echo l=$l
    
      cat math_moebius | sed "s%myzeta%$zeta%g" | sed "s%myl%$l%g" | sed "s%old_l%$old%g" | math
 

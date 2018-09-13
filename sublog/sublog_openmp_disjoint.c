@@ -276,7 +276,4 @@ void write_results()
   out=fopen(name_file, "at");
   fprintf(out,"%d %d %d %lf\n", l1, l2, d, log_det);
   fclose(out);  
-}
-
-
-  
+}  

@@ -1,0 +1,165 @@
+(*
+
+  This notebook computes a row of the correlation matrix
+  2<(a_n, a_n^dagger)^t(a_m^dagger, a_m)>-I in
+  the Majorana basis after any Moebius transformation
+  SL(2, C)*)
+
+(*
+
+  Under an arbitrary Moebius transformation the correlation
+  matrix is not Hermitian anymore, and we cannot employ moebius.c
+  to diagonalize it!
+
+*)
+
+(*Range of the interactions*)
+L=2;
+
+Array[A, L];
+Array[B, L]; 
+
+(*Initial Laurent polynomials*)
+
+Phi0[z_] := Sum[A[l]*z^(L+l)+Conjugate[A[l]]*z^(L-l), {l, 1, L}]+A0
+
+Xi0[z_] := Sum[B[l]*z^(L+l)-B[l]*z^(L-l), {l, 1, L}]
+
+
+(*Initial value of the couplings*)
+
+A[2] = 125/256;
+A[1] = -75/128;
+A0 = 5/16;
+B[2] = 131/256;
+B[1] = -85/128;
+
+(*Initial value of the roots*)
+
+(*Roots of Phi0*)
+zp0 = Table[Root[Phi0[z], j], {j, 1, 2*L}];
+
+(*Roots of Xi0*)
+zx0 = Table[Root[Xi0[z], j], {j, 1, 2*L}];
+ 
+(*SO(1,1) transformation*)
+
+zeta=myzeta;
+
+a=Cosh[zeta];
+b=Sinh[zeta];
+c=Sinh[zeta];
+d=Cosh[zeta];
+
+
+T[z_]:= (z*a+b)/(z*c+d)
+
+(*Roots of Phi*)
+zp = Table[T[zp0[[j]]], {j, 1, 2*L}];
+
+(*Roots of XiR*)
+zx = Table[T[zx0[[j]]], {j, 1, 2*L}];
+
+
+(*Final monic polynomials*)
+PhiM[z_] := Product[z-zp[[j]], {j, 1, 2*L}]
+XiM[z_] := Product[z-zx[[j]], {j, 1, 2*L}] 
+
+(*Change of the leading terms of the polynomials*)
+
+zt=0.5;
+
+AT=((a*zt+b)*(d+c*zt))^(-L)*Phi0[zt]/(T[zt]^(-L)*PhiM[T[zt]]);
+
+BT=((a*zt+b)*(d+c*zt))^(-L)*Xi0[zt]/(T[zt]^(-L)*XiM[T[zt]]);
+
+(*Final polynomials*)
+Phi[z_] := AT*PhiM[z]
+Xi[z_] := BT*XiM[z]
+
+XiR[z_] := I*Im[Xi[z]]
+XiI[z_] := Re[Xi[z]] 
+
+(*We calculate the symbol G of the correlation matrix in the Majorana basis*)
+
+(*We obtain the entries of M with the correct sign by solving the following 
+  differential equation for the dispersion relation*)
+
+omega = NDSolveValue[{t'[x] == 
+    I*Exp[I*x]*((Phi[Exp[I*x]]*Phi'[Exp[I*x]] + 
+         Xi'[Exp[I*x]]*Conjugate[Xi[Exp[I*x]]] + 
+         Xi[Exp[I*x]]*Conjugate[Xi'[Exp[I*x]]])/
+         (Phi[Exp[I*x]]^2 +Abs[Xi[Exp[I*x]]^2)), 
+   t[0] == 0.5*Log[Phi[1]^2 + Abs[Xi[1]]^2]}, t, {x, -Pi, Pi}]
+
+
+M11[x_] := XiI[Exp[I*x]]/Exp[omega[x]]
+
+M12[x_] := (Phi[Exp[I*x]] + XiR[Exp[I*x]])/Exp[omega[x]]
+
+M21[x_] := (Phi[Exp[I*x]] - XiR[Exp[I*x]])/Exp[omega[x]]
+
+(*Broken parity*)
+(*Transformation of the discontinuities of the symbol under Moebius*)
+
+theta10= 3*Pi/4;
+theta20= Pi/2;
+
+theta1=-Re[I*Log[(Exp[I*theta10]*Cosh[zeta]+Sinh[zeta])/
+                 (Exp[I*theta10]*Sinh[zeta]+Cosh[zeta])]];
+theta2=-Re[I*Log[(Exp[I*theta20]*Cosh[zeta]+Sinh[zeta])/
+                 (Exp[I*theta20]*Sinh[zeta]+Cosh[zeta])]];
+
+Array[G[x_], {2, 2}];
+
+G[x_][0, 0] := 
+ Piecewise[{{M11[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {1, x >= theta2 && x <= theta1}, {-1, 
+    x >= -theta1 && x <= -theta2}}]
+
+G[x_][0, 1] := 
+ Piecewise[{{M12[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {0, 
+    x >= theta2 && x <= theta1 || x >= -theta2 && x <= -theta1}}]
+
+G[x_][1, 0] := 
+ Piecewise[{{M21[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {0, 
+    x >= theta2 && x <= theta1 || x >= -theta2 && x <= -theta1}}]
+
+G[x_][1, 1] := 
+ Piecewise[{{-M11[x], 
+    x >= -Pi && x <= -theta1 || x >= -theta2 && x <= theta2 || 
+     x >= theta1 && x <= Pi}, {1, x >= theta2 && x <= theta1}, {-1, 
+    x >= -theta1 && x <= -theta2}}]
+
+(*Calculate the entries of a row of the matrix*)
+
+dmax = myl
+d = old_l;
+
+(*We write the entries of the row in a text file*)
+filename = FileNameJoin@{"moebius_correl.dat"};
+
+(*We guarantee that the output of PutAppend 
+  will take only one line in the textfile*) 
+SetOptions[OpenAppend, PageWidth -> Infinity] ;
+
+While[d+1 <= dmax,
+ V1 = NIntegrate[G[x][0, 0]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi);
+ V2 = NIntegrate[G[x][0, 1]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
+ V3 = NIntegrate[G[x][1, 0]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
+ V4 = NIntegrate[G[x][1, 1]*Exp[I*x*d], {x, -Pi, Pi}]/(2*Pi); 
+ data= Row[Riffle[{FortranForm[Re[V1]], FortranForm[Im[V1]],
+                   FortranForm[Re[V3]], FortranForm[Im[V3]],
+		   FortranForm[Re[V2]], FortranForm[Im[V2]],
+		   FortranForm[Re[V4]], FortranForm[Im[V4]]}, " "]];
+ PutAppend[OutputForm[data], filename];
+ d++;
+]
+
+
+

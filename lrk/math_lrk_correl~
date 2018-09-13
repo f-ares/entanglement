@@ -16,11 +16,11 @@ phi=Pi/4; (*Angle of the cuts of the polylog*)
 Phi[z_] := hopp*z + h + hopp/z
 Xi[z_] := (PolyLog[delta, Exp[I*phi]*z] -
            PolyLog[delta, Exp[-I*phi]/z] +
-	   PolyLog[delta, Exp[-I*phi]*z] -
-	   PolyLog[delta, Exp[I*phi]/z])/2
+	       PolyLog[delta, Exp[-I*phi]*z] -
+	       PolyLog[delta, Exp[I*phi]/z])/2
 
 
-(*Symbol of correlation matrix in the Majorana basis*)
+(*Symbol of correlation matrix in Majorana basis*)
 
 omega[z_] := Sqrt[Phi[z]^2+Abs[Xi[z]]^2]
 
@@ -46,3 +46,4 @@ While[d+1 <= jmax,
  PutAppend[OutputForm[data], filename];
  d++;
 ]
+

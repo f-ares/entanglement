@@ -12,9 +12,9 @@ The Mathematica notebook produces a plain text file with extension ".dat"
 that contains the entries of a row of the correlation matrix. This file can 
 be read with the C programs included. These programs construct the entire 
 correlation matrix from the entries of this file, compute its spectrum and, 
-finally, the Rényi entanglement entropy, whose value is written in another 
-".dat" file. Those that end with "disjoint_#.c" compute the entanglement 
-entropy of "#" disjoint intervals.
+finally, the von Neumann and Rényi entanglement entropies, whose values are 
+written in another ".dat" file. Those that end with "disjoint_#.c" compute 
+the entanglement entropy of "#" disjoint intervals.
 
 The repository is divided into three folders. The codes in each one are
 prepared to compute the entanglement entropy in a different particular 

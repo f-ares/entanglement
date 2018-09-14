@@ -7,7 +7,7 @@ correlation matrix is block Toeplitz with symbol a 2x2 matrix.
 The entries of a row of this block matrix are calculated with a Mathematica
 notebook (compatible with Mathematica 9.0 and later). The Mathematica files 
 are named starting by "math_". They can be ran in the Bash command line using 
-the correponding script that we include in each folder of the repository. 
+the corresponding script that we include in each folder of the repository. 
 The Mathematica notebook produces a plain text file with extension ".dat" 
 that contains the entries of a row of the correlation matrix. This file can 
 be read with the C programs included. These programs construct the entire 
